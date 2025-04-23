@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useUser, SignOutButton } from '@clerk/nextjs';
-import Link from 'next/link';
+import React from "react";
 
-function NavigationBar({ currentPath }) {
-  const { isLoaded, isSignedIn, user } = useUser();
+
+
+export default function Index() {
+  return (function MainComponent({ currentPath }) {
+  const { data: user, loading } = useUser();
   const [balance, setBalance] = useState(null);
   const [error, setError] = useState(null);
 
@@ -25,7 +26,7 @@ function NavigationBar({ currentPath }) {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
         });
-        fetchBalance(); // Retry after initialization
+        fetchBalance();
       }
     } catch (error) {
       setError("Erreur de chargement");
@@ -33,10 +34,10 @@ function NavigationBar({ currentPath }) {
   };
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (user) {
       fetchBalance();
     }
-  }, [isSignedIn]);
+  }, [user]);
 
   const isCasinoPath = currentPath.startsWith("/casino");
 
@@ -45,81 +46,66 @@ function NavigationBar({ currentPath }) {
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-[#FFD700]">
+            <a href="/" className="text-xl font-bold text-[#FFD700]">
               BetSim
-            </Link>
+            </a>
           </div>
-          
-          {/* Center Navigation Links */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
+          <div className="flex items-center space-x-4">
+            <a
               href="/"
-              className={`px-3 py-2 text-sm font-medium ${
-                currentPath === "/" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`px-3 py-2 text-sm font-medium ${currentPath === "/" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"}`}
             >
               Accueil
-            </Link>
-            <Link
+            </a>
+            <a
               href="/sport"
-              className={`px-3 py-2 text-sm font-medium ${
-                currentPath === "/sport" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`px-3 py-2 text-sm font-medium ${currentPath === "/sport" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"}`}
             >
               Sport
-            </Link>
-            <Link
+            </a>
+            <a
               href="/casino"
-              className={`px-3 py-2 text-sm font-medium ${
-                isCasinoPath ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`px-3 py-2 text-sm font-medium ${isCasinoPath ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"}`}
             >
               Casino
-            </Link>
-            <Link
+            </a>
+            <a
               href="/rankings"
-              className={`px-3 py-2 text-sm font-medium ${
-                currentPath === "/rankings" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`px-3 py-2 text-sm font-medium ${currentPath === "/rankings" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"}`}
             >
               Classement
-            </Link>
+            </a>
           </div>
-
-          {/* Right-side Auth Section */}
           <div className="flex items-center space-x-4">
-            {isLoaded && isSignedIn ? (
+            {!loading && user ? (
               <>
-                <div className="hidden sm:flex items-center space-x-4">
-                  <span className="text-[#FFD700]">
-                    {error
-                      ? "Erreur"
-                      : balance !== null
+                <span className="text-[#FFD700]">
+                  {error
+                    ? "Erreur de chargement"
+                    : balance !== null
                       ? `${balance} tokens`
                       : "Chargement..."}
-                  </span>
-                  <Link
-                    href="/profil"
-                    className={`px-3 py-2 text-sm font-medium ${
-                      currentPath === "/profil" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-                    }`}
-                  >
-                    Profil
-                  </Link>
-                </div>
-                <SignOutButton>
-                  <button className="rounded-lg bg-[#FFD700] px-4 py-2 text-sm font-medium text-[#003366] hover:bg-[#FFD700]/80">
-                    Déconnexion
-                  </button>
-                </SignOutButton>
+                </span>
+                <a
+                  href="/profil"
+                  className={`px-3 py-2 text-sm font-medium ${currentPath === "/profil" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"}`}
+                >
+                  Profil
+                </a>
+                <a
+                  href="/account/logout"
+                  className="text-white hover:text-[#FFD700]"
+                >
+                  Déconnexion
+                </a>
               </>
             ) : (
-              <Link
-                href="/sign-up"
+              <a
+                href="/account/signin"
                 className="rounded-lg bg-[#FFD700] px-4 py-2 text-sm font-medium text-[#003366] hover:bg-[#FFD700]/80"
               >
                 Connexion
-              </Link>
+              </a>
             )}
           </div>
         </div>
@@ -128,4 +114,49 @@ function NavigationBar({ currentPath }) {
   );
 }
 
-export default NavigationBar;
+function StoryComponent() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="mb-4 text-lg font-bold">Navigation (Non connecté)</h2>
+        <MainComponent currentPath="/" />
+      </div>
+
+      <div className="mt-20">
+        <h2 className="mb-4 text-lg font-bold">
+          Navigation (Page Accueil active)
+        </h2>
+        <MainComponent currentPath="/" />
+      </div>
+
+      <div className="mt-20">
+        <h2 className="mb-4 text-lg font-bold">
+          Navigation (Page Sport active)
+        </h2>
+        <MainComponent currentPath="/sport" />
+      </div>
+
+      <div className="mt-20">
+        <h2 className="mb-4 text-lg font-bold">
+          Navigation (Page Casino active)
+        </h2>
+        <MainComponent currentPath="/casino" />
+      </div>
+
+      <div className="mt-20">
+        <h2 className="mb-4 text-lg font-bold">
+          Navigation (Page Rankings active)
+        </h2>
+        <MainComponent currentPath="/rankings" />
+      </div>
+
+      <div className="mt-20">
+        <h2 className="mb-4 text-lg font-bold">
+          Navigation (Page Profil active)
+        </h2>
+        <MainComponent currentPath="/profil" />
+      </div>
+    </div>
+  );
+});
+}

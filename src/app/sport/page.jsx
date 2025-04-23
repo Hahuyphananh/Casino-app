@@ -1,10 +1,6 @@
 "use client";
 import React from "react";
 import NavigationBar from "../../components/navigation-bar";
-import { useUser } from '@clerk/nextjs'
-import { useState, useEffect  } from "react";
-import EventCard from "../../components/event-card";
-import BetSlip from "../../components/bet-slip";
 
 function MainComponent() {
   const { data: user } = useUser();

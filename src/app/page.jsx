@@ -1,12 +1,9 @@
 "use client";
 import React from "react";
 import NavigationBar from "../components/navigation-bar";
-import BetSlip from "../components/bet-slip";
-import { useUser } from '@clerk/nextjs'
-import { useState, useEffect  } from "react";
 
 function MainComponent() {
-  const { user } = useUser()
+  const { data: user } = useUser();
   const [selectedBet, setSelectedBet] = useState(null);
   const [selectedOdds, setSelectedOdds] = useState(null);
   const [sports, setSports] = useState([]);
