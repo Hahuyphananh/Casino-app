@@ -1,33 +1,45 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useUser, SignOutButton } from '@clerk/nextjs';
+import { useUser, useAuth, SignOutButton } from '@clerk/nextjs';
 import Link from 'next/link';
 
 function NavigationBar({ currentPath }) {
   const { isLoaded, isSignedIn, user } = useUser();
+  const { getToken } = useAuth(); // Récupère le JWT Clerk
   const [balance, setBalance] = useState(null);
   const [error, setError] = useState(null);
 
   const fetchBalance = async () => {
     try {
+      const token = await getToken(); // JWT
+
       const response = await fetch("/api/get-user-tokens", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // 🔒 envoie du JWT
+        },
       });
+
       const data = await response.json();
 
       if (data.success) {
         setBalance(data.data.balance);
-      } else if (data.error === "Tokens non initialisés") {
+      } else if (data.shouldInitialize) {
+        // Initialisation si nécessaire
         await fetch("/api/tokens/initialize", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, // également ici
+          },
         });
-        fetchBalance(); // Retry after initialization
+        fetchBalance(); // Retry après init
+      } else {
+        setError(data.error || "Erreur inconnue");
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Erreur de fetchBalance:", err);
       setError("Erreur de chargement");
     }
   };
@@ -49,44 +61,25 @@ function NavigationBar({ currentPath }) {
               BetSim
             </Link>
           </div>
-          
-          {/* Center Navigation Links */}
+
+          {/* Liens au centre */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/"
-              className={`px-3 py-2 text-sm font-medium ${
-                currentPath === "/" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
-            >
-              Accueil
-            </Link>
-            <Link
-              href="/sport"
-              className={`px-3 py-2 text-sm font-medium ${
-                currentPath === "/sport" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
-            >
-              Sport
-            </Link>
-            <Link
-              href="/casino"
-              className={`px-3 py-2 text-sm font-medium ${
-                isCasinoPath ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
-            >
-              Casino
-            </Link>
-            <Link
-              href="/rankings"
-              className={`px-3 py-2 text-sm font-medium ${
-                currentPath === "/rankings" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
-            >
-              Classement
-            </Link>
+            {["/", "/sport", "/casino", "/rankings"].map((path) => (
+              <Link
+                key={path}
+                href={path}
+                className={`px-3 py-2 text-sm font-medium ${
+                  currentPath === path || (path === "/casino" && isCasinoPath)
+                    ? "text-[#FFD700]"
+                    : "text-white hover:text-[#FFD700]"
+                }`}
+              >
+                {path === "/" ? "Accueil" : path.slice(1).charAt(0).toUpperCase() + path.slice(2)}
+              </Link>
+            ))}
           </div>
 
-          {/* Right-side Auth Section */}
+          {/* Droite */}
           <div className="flex items-center space-x-4">
             {isLoaded && isSignedIn ? (
               <>
