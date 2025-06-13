@@ -1,14 +1,18 @@
-import { SignUp } from '@clerk/nextjs';
+"use client";
+
+import { SignUp } from "@clerk/nextjs";
 
 export default function Page() {
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <SignUp 
-        path="/sign-up"
-        routing="path"
-        signInUrl="/sign-in"
-        afterSignUpUrl="/dashboard" // Where users go after signing up
-      />
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <SignUp afterSignUpUrl="/sync" />
     </div>
   );
 }
